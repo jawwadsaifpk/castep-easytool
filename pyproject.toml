@@ -1,0 +1,31 @@
+[project]
+name = "castep-easytool"
+version = "0.3.0" # Incremented version
+authors = [
+    { name = "Your Name", email = "your.email@example.com" },
+]
+description = "A CLI tool to simplify pre- and post-processing for CASTEP."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+dependencies = [
+    "pymatgen>=2024.3.1",
+    "typer[all]>=0.9.0",
+    "ase>=3.22.1",
+    "sumo>=2.2.5",
+    "easyunfold>=0.3.1"
+]
+
+[project.urls]
+Homepage = "https://github.com/YOUR_USERNAME/castep-easytool"
+"Bug Tracker" = "https://github.com/YOUR_USERNAME/castep-easytool/issues"
+
+[project.scripts]
+castep-easytool = "castep_easytool.main:app"
