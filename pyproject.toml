@@ -1,11 +1,17 @@
 [project]
 name = "castep-easytool"
 version = "4.0.0"
+description = "A CLI to simplify common pre- and post-processing tasks for the CASTEP plane-wave DFT code."
+readme = "README.md"
 dependencies = [
     "typer[all]>=0.9.0",
     "pymatgen-core",
     "seekpath"
 ]
+
+[project.urls]
+Homepage = "https://github.com/jawwadsaifpk/castep-easytool"
+Repository = "https://github.com/jawwadsaifpk/castep-easytool"
 
 [project.scripts]
 castep-easytool = "castep_easytool.main:app"
