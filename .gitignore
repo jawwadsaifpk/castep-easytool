@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Environment
+.env
+.venv
+venv/
+ENV/
+
+# OS-specific
+.DS_Store
+Thumbs.db
