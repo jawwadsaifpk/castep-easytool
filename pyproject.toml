@@ -1,0 +1,11 @@
+[project]
+name = "castep-easytool"
+version = "4.0.0"
+dependencies = [
+    "typer[all]>=0.9.0",
+    "pymatgen-core",
+    "seekpath"
+]
+
+[project.scripts]
+castep-easytool = "castep_easytool.main:app"
