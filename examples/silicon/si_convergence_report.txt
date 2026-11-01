@@ -1,0 +1,31 @@
+Adaptive convergence report - si
+Generated : 2026-11-01 11:02:43
+Criteria  : dE < 1 meV/atom and d(stress) < 0.1 GPa, 2 consecutive steps | 2 atoms
+==================================================================
+
+Phase 1 - cut-off (fixed k-grid: 5x5x5)
+  Ecut=  400.0 eV  E=    -340.901070253 eV  dE=       --- meV/atom
+  Ecut=  500.0 eV  E=    -340.901465102 eV  dE=    0.1974 meV/atom
+  Ecut=  600.0 eV  E=    -340.901607954 eV  dE=    0.0714 meV/atom
+
+Phase 2 - k-points (fixed cut-off: 600 eV)
+  k-grid=    1×1×1  spacing=0.3190  E=    -323.943931319 eV  dE=       --- meV/atom
+  k-grid=    2×2×2  spacing=0.1595  E=    -340.796873934 eV  dE= 8426.4713 meV/atom
+  k-grid=    3×3×3  spacing=0.1063  E=    -340.347436458 eV  dE=  224.7187 meV/atom
+  k-grid=    4×4×4  spacing=0.0797  E=    -340.963989284 eV  dE=  308.2764 meV/atom
+  k-grid=    5×5×5  spacing=0.0638  E=    -340.901607954 eV  dE=   31.1907 meV/atom
+  k-grid=    6×6×6  spacing=0.0532  E=    -340.966708559 eV  dE=   32.5503 meV/atom
+  k-grid=    7×7×7  spacing=0.0456  E=    -340.957094601 eV  dE=    4.8070 meV/atom
+  k-grid=    8×8×8  spacing=0.0399  E=    -340.966781903 eV  dE=    4.8437 meV/atom
+  k-grid=    9×9×9  spacing=0.0354  E=    -340.965024950 eV  dE=    0.8785 meV/atom
+  k-grid= 10×10×10  spacing=0.0319  E=    -340.966775849 eV  dE=    0.8754 meV/atom
+
+Final check (cut-off + 100 eV at the converged k-mesh): verified
+
+==================================================================
+RECOMMENDED PRODUCTION PARAMETERS
+  cut_off_energy      : 600 eV
+  KPOINTS_MP_GRID     : 10 10 10
+  KPOINTS_MP_SPACING  : 0.0325 1/ang   (CASTEP convention, no 2pi; reproduces the grid on this cell)
+  k-point separation  : 0.0319  0.0319  0.0319 1/A along b1 b2 b3
+==================================================================

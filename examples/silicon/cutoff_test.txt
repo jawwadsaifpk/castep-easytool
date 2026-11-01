@@ -1,0 +1,10 @@
+Cut-off energy convergence test  (tolerance 1 meV/atom, reference = last row)
+
+Setting       k-pts      E/atom (eV)   dE vs ref (meV/atom)  File
+300 eV          172      -170.481351                  0.011  Si_ecut_0300.castep
+400 eV          172      -170.481084                  0.278  Si_ecut_0400.castep
+500 eV          172      -170.481277                  0.085  Si_ecut_0500.castep
+600 eV          172      -170.481335                  0.027  Si_ecut_0600.castep
+700 eV          172      -170.481362                  0.000  Si_ecut_0700.castep
+
+Converged to 1 meV/atom from: 300 eV

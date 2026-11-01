@@ -1,0 +1,28 @@
+[project]
+name = "castep-easytool"
+version = "1.0.0"
+description = "A command-line toolkit for CASTEP: cell generation, supercells, band paths and plots, geometry extraction, run checks and automatic convergence tests."
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["CASTEP", "DFT", "materials science", "band structure", "convergence", "CLI"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Environment :: Console",
+]
+dependencies = [
+    "typer[all]>=0.9.0",
+    "pymatgen-core",
+    "seekpath",
+    "numpy",
+    "matplotlib"
+]
+
+[project.urls]
+Homepage = "https://github.com/jawwadsaifpk/castep-easytool"
+Repository = "https://github.com/jawwadsaifpk/castep-easytool"
+
+[project.scripts]
+castep-easytool = "castep_easytool.main:app"

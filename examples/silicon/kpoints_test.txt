@@ -1,0 +1,11 @@
+k-point grid convergence test  (tolerance 1 meV/atom, reference = last row)
+
+Setting       k-pts      E/atom (eV)   dE vs ref (meV/atom)  File
+4x4x4            32      -170.484485                  1.275  Si_kspc_0.080.castep
+4x4x4            32      -170.484485                  1.275  Si_kspc_0.100.castep
+6x6x6           108      -170.485870                 -0.110  Si_kspc_0.060.castep
+7x7x7           172      -170.481277                  4.482  Si_kspc_0.050.castep
+8x8x8           256      -170.485919                 -0.159  Si_kspc_0.040.castep
+11x11x11        666      -170.485760                  0.000  Si_kspc_0.030.castep
+
+Converged to 1 meV/atom from: 8x8x8

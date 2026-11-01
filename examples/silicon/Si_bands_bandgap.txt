@@ -1,0 +1,6 @@
+Band Gap Summary
+========================================
+System          : Si_bands
+Spin-polarised  : No
+
+  Band gap:              0.6123 eV   Indirect     Γ → (0.417,0.000,0.417)

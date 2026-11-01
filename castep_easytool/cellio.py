@@ -1,0 +1,156 @@
+# -*- coding: utf-8 -*-
+"""
+Minimal CASTEP .cell reader/writer and primitive-cell helpers.
+
+Reads the lattice and atomic positions (LATTICE_CART / LATTICE_ABC and
+POSITIONS_FRAC / POSITIONS_ABS), keeps every other block as text, and can build a
+primitive-cell version of a structure while saying exactly what was kept or dropped.
+"""
+import re
+
+import numpy as np
+
+_UNITS_TO_ANG = {"ang": 1.0, "a": 1.0, "bohr": 0.529177210903, "a0": 0.529177210903,
+                 "nm": 10.0, "m": 1e10, "cm": 1e8}
+_BLOCK_RE = re.compile(r"^[ \t]*%BLOCK[ \t]+(\w+)[ \t]*\n(.*?)^[ \t]*%ENDBLOCK[ \t]+\1[ \t]*$",
+                       re.IGNORECASE | re.DOTALL | re.MULTILINE)
+# Blocks that depend only on species (still valid in a different cell) and are
+# therefore carried over when the structure is converted to a primitive cell.
+SPECIES_BLOCKS = ("SPECIES_POT", "SPECIES_MASS", "SPECIES_LCAO_STATES", "HUBBARD_U",
+                  "EXTERNAL_PRESSURE")
+_KPOINT_KEYS = re.compile(r"^\s*(kpoints?_mp_(grid|spacing|offset)|kpoints?_list)\b", re.IGNORECASE)
+
+
+def _clean(line):
+    return re.split(r"[#!;]", line, 1)[0].strip()
+
+
+def split_blocks(text):
+    """({NAME: body text}, text with all blocks removed)."""
+    blocks = {m.group(1).upper(): m.group(2) for m in _BLOCK_RE.finditer(text)}
+    return blocks, _BLOCK_RE.sub("", text)
+
+
+def _rows(body):
+    return [c for c in (_clean(l) for l in body.splitlines()) if c]
+
+
+def _unit_factor(rows):
+    if rows and len(rows[0].split()) == 1 and not re.match(r"^[-+\d.]", rows[0]):
+        u = rows[0].lower()
+        if u not in _UNITS_TO_ANG:
+            raise ValueError(f"unsupported length unit '{rows[0]}'")
+        return _UNITS_TO_ANG[u], rows[1:]
+    return 1.0, rows
+
+
+def read_cell(text):
+    """
+    Parse a .cell text. Returns dict: lattice (3x3 Angstrom), species (list[str]),
+    frac (Nx3), blocks (dict of raw block bodies), keywords (dict lower-case -> str).
+    Raises ValueError with a readable message if lattice or positions are missing.
+    """
+    blocks, rest = split_blocks(text)
+    if "LATTICE_CART" in blocks:
+        f, rows = _unit_factor(_rows(blocks["LATTICE_CART"]))
+        if len(rows) < 3:
+            raise ValueError("LATTICE_CART needs three vectors")
+        lat = np.array([[float(x) for x in r.split()[:3]] for r in rows[:3]]) * f
+    elif "LATTICE_ABC" in blocks:
+        f, rows = _unit_factor(_rows(blocks["LATTICE_ABC"]))
+        if len(rows) < 2:
+            raise ValueError("LATTICE_ABC needs two lines (a b c / alpha beta gamma)")
+        a, b, c = [float(x) for x in rows[0].split()[:3]]
+        al, be, ga = [float(x) for x in rows[1].split()[:3]]
+        from pymatgen.core import Lattice
+        lat = Lattice.from_parameters(a * f, b * f, c * f, al, be, ga).matrix
+    else:
+        raise ValueError("no LATTICE_CART or LATTICE_ABC block found")
+
+    frac_mode = "POSITIONS_FRAC" in blocks
+    key = "POSITIONS_FRAC" if frac_mode else ("POSITIONS_ABS" if "POSITIONS_ABS" in blocks else None)
+    if key is None:
+        raise ValueError("no POSITIONS_FRAC or POSITIONS_ABS block found")
+    pf, rows = (1.0, _rows(blocks[key])) if frac_mode else _unit_factor(_rows(blocks[key]))
+    species, coords = [], []
+    for r in rows:
+        tok = r.split()
+        if len(tok) < 4:
+            raise ValueError(f"cannot read atom line: '{r}'")
+        species.append(re.split(r"[:]", tok[0])[0])
+        coords.append([float(x) for x in tok[1:4]])
+    coords = np.array(coords) * pf
+    frac = coords if frac_mode else coords @ np.linalg.inv(lat)
+
+    kw = {}
+    for line in rest.splitlines():
+        c = _clean(line)
+        if c:
+            m = re.match(r"^([A-Za-z_]+)\s*[:=]?\s*(.*)$", c)
+            if m:
+                kw[m.group(1).lower()] = m.group(2).strip()
+    return {"lattice": lat, "species": species, "frac": frac, "blocks": blocks, "keywords": kw,
+            "rest": rest}
+
+
+def read_cell_file(path):
+    from pathlib import Path
+    return read_cell(Path(path).read_text(encoding="utf-8", errors="replace"))
+
+
+def to_structure(info):
+    from pymatgen.core import Lattice, Structure
+    return Structure(Lattice(info["lattice"]), info["species"], info["frac"])
+
+
+def primitive_of(struct, symprec=0.01):
+    """
+    (primitive Structure or None, spacegroup string). None means the structure is
+    already primitive (same number of atoms) or symmetry analysis failed.
+    """
+    from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+    try:
+        sga = SpacegroupAnalyzer(struct, symprec=symprec)
+        sg = f"{sga.get_space_group_symbol()} (No. {sga.get_space_group_number()})"
+        prim = sga.get_primitive_standard_structure()
+    except Exception:
+        return None, "unknown"
+    return (prim if len(prim) < len(struct) else None), sg
+
+
+def cell_text(struct, species_blocks=None, extra_lines=(), header="# CASTEP .cell file generated by castep-easytool"):
+    """Write lattice (LATTICE_CART) + POSITIONS_FRAC + optional species blocks/keywords."""
+    m = struct.lattice.matrix
+    out = [header, "", "%BLOCK LATTICE_CART"]
+    out += [f"  {v[0]:.10f}  {v[1]:.10f}  {v[2]:.10f}" for v in m]
+    out += ["%ENDBLOCK LATTICE_CART", "", "%BLOCK POSITIONS_FRAC"]
+    out += [f"  {s.specie.symbol:<4} {s.a:.10f}  {s.b:.10f}  {s.c:.10f}" for s in struct]
+    out += ["%ENDBLOCK POSITIONS_FRAC", ""]
+    for name, body in (species_blocks or {}).items():
+        out += [f"%BLOCK {name}", body.strip("\n"), f"%ENDBLOCK {name}", ""]
+    out += list(extra_lines)
+    return "\n".join(out).rstrip() + "\n"
+
+
+def convert_cell_to_primitive(info, prim):
+    """
+    Build the text of a primitive-cell .cell from a parsed cell. Returns
+    (text, kept_blocks, dropped_blocks, dropped_spin_tags).
+    """
+    kept = {k: v for k, v in info["blocks"].items() if k in SPECIES_BLOCKS}
+    lat_pos = {"LATTICE_CART", "LATTICE_ABC", "POSITIONS_FRAC", "POSITIONS_ABS"}
+    dropped = [k for k in info["blocks"] if k not in kept and k not in lat_pos
+               and not k.startswith(("KPOINT", "KPOINTS"))]
+    extra = []
+    for line in info["rest"].splitlines():
+        c = _clean(line)
+        if c and not _KPOINT_KEYS.match(c):
+            extra.append(c)
+    spin = any("spin" in l.lower() for l in info["blocks"].get("POSITIONS_FRAC", "").splitlines()
+               + info["blocks"].get("POSITIONS_ABS", "").splitlines())
+    return cell_text(prim, kept, extra), list(kept), dropped, spin
+
+
+def is_fixed_cell(info):
+    v = info["keywords"].get("fix_all_cell", "").lower()
+    return v in ("true", "t", ".true.", "yes", "1")

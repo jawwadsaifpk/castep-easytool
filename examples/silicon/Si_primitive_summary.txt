@@ -1,0 +1,37 @@
+CASTEP run summary - Si_primitive.castep
+============================================================
+
+Calculation:
+  Task                : geometry optimization
+  Optimiser           : LBFGS
+  Started             : Sun, 01 Nov 2026 10:42:36 +0500
+
+Inputs:
+  XC functional       : Perdew Burke Ernzerhof
+  Dispersion          : off
+  Cut-off energy      : 500.0 eV
+  k-point grid        : 4x4x4  (10 irreducible k-points)
+  Spin                : non-spin-polarised
+  Smearing            : Gaussian, 0.2 eV
+  SCF tolerance       : 1e-06 eV/atom
+
+System:
+  Ions / species      : 2 / 1
+  Electrons / bands   : 8 / 8
+  Cell volume (A^3)   : 40.330 -> 40.879  (+1.36 %)
+
+Results:
+  Final enthalpy      : -340.969149 eV
+  Final energy E      : -340.969147 eV
+  Free energy E-TS    : -340.969148 eV
+  Energy per ion      : -170.484574 eV
+  Pressure            : 0.0011 GPa
+  SCF loops           : 6
+
+Run:
+  Total time          : 10.2 s
+  Peak memory         : 0.81 GB
+  Geometry optimisation: converged
+  Status              : finished
+
+Warnings: none
